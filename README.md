@@ -77,15 +77,156 @@ same as
 ```
 ssh -p 2222 ke@host
 ```
+#####Chapter 5. Managing Software Packages
+######Searching for packages
+```
+apt-cache search php
+apt-cache show php
+```
+######Managing software repositories
+ppa
+```
+apt-add-repository ppa:ondrej/mariadb-10.0
+```
+
+#####Chapter 7. Managing Your Ubuntu Server Network
+######Serving IP addresses with isc-dhcp-server
+```
+apt-get install isc-dhcp-server -y
+```
+######Serving IP addresses with isc-dhcp-server
+```
+apt-get install bind9 -y
+```
+then
+```
+vim /etc/bind/named.conf.options
+```
+edit
+```
+   forwarders {
+    8.8.8.8;
+    8.8.4.4;
+};
+```
+
+
+
+#####Chapter 8. Accessing and Sharing Files
+######Setting up NFS shares
+```
+apt-get install nfs-kernel-server -y
+```
+config
+```
+mv /etc/exports /etc/exports.orig
+mkdir -p /etc/exports/{backup,documents,public}
+```
+
+######Transferring files with rsync
+below are same
+```
+rsync -r /home/test /backup
+rsync -r /home/test /backup/
+```
+below are same
+```
+rsync -r /home/test/ /backup
+rsync -r /home/test/* /backup
+rsync -r /home/test/ /backup/
+rsync -r /home/test/* /backup/
+```
+keep metadata
+```
+rsync -a /home/myuser /backup  (same as -rlptgoD)
+```
+real sync, delete file in target if src does not exist
+```
+rsync -av --delete /src /target
+```
+backup if overwritten
+```
+rsync -avb --delete /src /target
+```
+assign baskupdir
+```
+rsync -avb --backup-dir=../test3 /etc/postgresql/9.5/main/ test2 //test3 relative to test2 path
+```
+######Transferring files with SCP
+```
+scp -P 22222 -r /src /target
+```
+######Mounting remote filesystems with SSHFS(temp solution)
+```
+apt install sshfs
+sshfs ke@192.168.1.1:/test /test
+```
+```
+umount /test
+```
+if failed, use
+```
+fusermount -u /test
+```
+or in fstab
+```
+ke@192.168.1.1:/test    /test   fuse.sshfs  rw,noauto,users,_netdev  0  0
+```
 
 
 
 
+#####Chapter 10. Serving Web Content
+######Installing and configuring Apache
+env save in (/etc/apache2/envvars)
+```
+<VirtualHost 192.168.1.1:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/a
 
+    ErrorLog ${APACHE_LOG_DIR}/a-error.log
+    CustomLog ${APACHE_LOG_DIR}/a-access.log combined
+</VirtualHost>
+```
 
+multiple servers
+```
+<VirtualHost *:80>
+    ServerName a.com
+    DocumentRoot /var/www/a
+</VirtualHost>
 
-
-
+<VirtualHost *:80>
+    ServerName b.com
+    DocumentRoot /var/www/b
+</VirtualHost>
+```
+######Installing additional Apache modules
+```
+aptitude search libapache2-mod
+```
+or
+```
+apt-cache search libapache2-mod
+```
+view a list of modules built-in to Apache
+```
+apache2 -l
+```
+list al modules
+```
+a2enmod
+```
+######
+selfsign
+```
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/certs/server.key -out /etc/apache2/certs/server.crt
+```
+(non self sign)need to submit csr:
+```
+openssl req -new -newkey rsa:2048 -nodes -keyout server.key -out server.csr
+```
+```
 
 
 
